@@ -10,6 +10,7 @@ As models:
 As views:
 -MatchView
 -TournamentView
+-ReportView
 -PlayerView
 -RoundView
 
