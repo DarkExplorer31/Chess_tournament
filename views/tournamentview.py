@@ -42,9 +42,9 @@ class TournamentView:
                     + Fore.RESET
                 )
             else:
-                print("Voici les tournois déjà créés:\n")
+                print("Voici les noms de tournoi déjà créés:\n")
                 for tournament in all_existing_tournament:
-                    print(Fore.MAGENTA + tournament + Fore.RESET)
+                    print(Fore.RED + tournament + Fore.RESET)
             name = input(
                 "Quel est le nom de ce tournoi?"
                 + " (tapez 'q' pour revenir au menu)\n> "
@@ -149,6 +149,22 @@ class TournamentView:
             else:
                 print(Fore.RED + rounds + "'' n'est pas valide" + Fore.RESET)
 
+    def list_enumeration(self, player_list):
+        if not player_list:
+            print(
+                Fore.RED
+                + "Votre liste de joueurs sélectionnés est vide."
+                + Fore.RESET
+            )
+        elif len(player_list) == 1:
+            print("Votre liste comporte 1 joueur.")
+        elif len(player_list) > 1:
+            print(
+                "Votre liste de joueurs sélectionnés: {} joueurs".format(
+                    len(player_list)
+                )
+            )
+
     def display_tournament_players(self, players_saved):
         print("Les joueurs déjà enregistrés sont: ")
         for player in players_saved:
@@ -175,7 +191,7 @@ class TournamentView:
             print(
                 Fore.BLUE
                 + "Pour un total de: "
-                + len(current_list)
+                + str(len(current_list))
                 + " joueur(s)\n"
                 + Fore.RESET
             )
@@ -203,20 +219,7 @@ class TournamentView:
         player_list = []
         decision = False
         while not decision:
-            if not player_list:
-                print(
-                    Fore.RED
-                    + "Votre liste de joueurs sélectionnés est vide."
-                    + Fore.RESET
-                )
-            elif len(player_list) == 1:
-                print("Votre liste de joueurs sélectionnés comporte 1 joueur.")
-            elif len(player_list) > 1:
-                print(
-                    "Votre liste de joueurs sélectionnés: {} joueurs".format(
-                        len(player_list)
-                    )
-                )
+            self.list_enumeration(player_list)
             self.display_tournament_players(players_saved)
             current_player = input(self.demande).upper()
             if current_player == "":
@@ -227,7 +230,6 @@ class TournamentView:
             elif current_player == "T":
                 player_list = players_saved
                 if len(player_list) % 2 != 0:
-                    player_list = []
                     print(
                         Fore.RED
                         + "La liste de tous les joueurs n'est pas paire.\n"
@@ -247,6 +249,18 @@ class TournamentView:
                     + Fore.RESET
                 )
             else:
+                player_exist = False
+                for player in player_list:
+                    if current_player in player.identifiant:
+                        print(
+                            Fore.RED
+                            + "Le joueur est déjà enregistré.\n"
+                            + Fore.RESET
+                        )
+                        player_exist = True
+                        break
+                if player_exist:
+                    continue
                 for player in players_saved:
                     if current_player == player.identifiant:
                         player_list.append(player)
@@ -286,7 +300,7 @@ class TournamentView:
             ).capitalize()
             if selected in tournament_saved:
                 return selected
-            elif selected == "Q" or selected == "q":
+            elif selected == "Q":
                 return None
             else:
                 print(Fore.RED + selected + " n'est pas valide" + Fore.RESET)
@@ -297,9 +311,6 @@ class TournamentView:
             + "Le tournoi n'a pas pu être enregistré: le nom est déjà pris.\n"
             + Fore.RESET
         )
-
-    def display_tournament_error(self):
-        print(Fore.RED + "Le tournoi sélectionné est terminé.\n" + Fore.RESET)
 
     def display_import_error(self):
         print(

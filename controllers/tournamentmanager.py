@@ -27,7 +27,7 @@ class TournamentManager:
     def create_tournament(self, players_saved):
         """We create a new tournament, a tournament has:
         a name, a location (place), a list of players and
-        a nummber of rounds"""
+        a number of rounds"""
         all_tournaments_names = Tournament.get_all_tournament_names()
         name = self.tournament_view.ask_for_name(all_tournaments_names)
         control_name = Tournament.control_name_exist(name)
@@ -152,8 +152,12 @@ class TournamentManager:
             next_match_list.append(next_match)
         return next_match_list
 
-    def define_match_list(self):
+    def define_match_list(self, round_nb):
         """Define next confrontation, after first round of tournament"""
+        restored_round = self.restore_round(self.tournament.name, listing=True)
+        for round in restored_round:
+            if round.round_nb == round_nb:
+                return round
         previous_matches = self.all_previous_matches()
         ranking = self.tournament.ranking.copy()
         new_match_list = []
@@ -188,7 +192,7 @@ class TournamentManager:
 
     def select_tournament(self):
         """Allow to resume an unfinished tournament"""
-        all_path = Tournament.get_all_tournament_names()
+        all_path = Tournament.get_all_tournament_names(with_finished=True)
         choice = self.tournament_view.select_previous_tournament(all_path)
         if choice is None:
             return None
@@ -204,9 +208,6 @@ class TournamentManager:
 
     def restore_tournament(self, tournament_name):
         t_restored = Tournament.get_tournament_info(tournament_name)
-        if t_restored.ending_date:
-            self.tournament_view.display_tournament_error()
-            return None
         tournament_player = []
         for player in t_restored.players:
             player_founded = Player.get_player_by_ident(player)
@@ -273,7 +274,7 @@ class TournamentManager:
             if self.tournament.round == 1:
                 starting_round = self.define_first_round()
             else:
-                starting_round = self.define_match_list()
+                starting_round = self.define_match_list(self.tournament.round)
             self.roundview.display_match_list(starting_round)
             self.randomize_color(starting_round)
             ending_round = self.sorting_by_score(starting_round)

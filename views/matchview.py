@@ -70,7 +70,7 @@ class MatchView:
                 print(Fore.RED + "Vous quitter le tournoi" + Fore.RESET)
                 return None
             else:
-                print(Fore.RED + match_result + " n'est pas valide," + Fore.RESET)
+                print(Fore.RED + match_result + " est invalide" + Fore.RESET)
             match.match_result = (
                 [match.player, match.player_score],
                 [match.opponent, match.opponent_score],

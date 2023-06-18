@@ -89,7 +89,20 @@ class Tournament:
             json.dump(all_information, file)
 
     @classmethod
-    def get_all_tournament_names(cls):
+    def control_finished(cls, tournament):
+        path_control = os.path.exists(tournament)
+        if path_control is True:
+            with open(tournament, "r") as file:
+                all_infos = json.load(file)
+                if all_infos["ending_date"]:
+                    return tournament
+                else:
+                    return None
+        else:
+            return None
+
+    @classmethod
+    def get_all_tournament_names(cls, with_finished=False):
         file_list = []
         for root, _, files in os.walk(TOURNAMENT_FILES):
             for file in files:
@@ -99,7 +112,15 @@ class Tournament:
                     file_path = file_path.replace(TOURNAMENT_FILES + "/", "")
                     file_path = file_path.replace(".json", "")
                     file_list.append(file_path)
-        return file_list
+        final_list = []
+        if with_finished:
+            for tournament in file_list:
+                tournament_control = cls.control_finished(tournament)
+                if not tournament_control:
+                    final_list.append(tournament)
+            return final_list
+        else:
+            return file_list
 
     @classmethod
     def control_name_exist(cls, tournament_name):

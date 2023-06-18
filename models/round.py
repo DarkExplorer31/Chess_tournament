@@ -74,8 +74,8 @@ class Round:
             json.dump(all_information, file, default=lambda x: x.to_dict())
 
     @classmethod
-    def get_all_round_files(cls, tournament_name):
-        round_file = rf"^data/tournaments/{tournament_name}_round[0-9]{{0,99}}.json$"
+    def get_all_round_files(cls, t_name):
+        round_file = rf"^data/tournaments/{t_name}_round[0-9]{{0,99}}.json$"
         file_list = []
         for root, _, files in os.walk(TOURNAMENT_FILES):
             for file in files:

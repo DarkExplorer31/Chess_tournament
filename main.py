@@ -1,3 +1,4 @@
+import os
 from colorama import Fore
 
 from controllers.tournamentmanager import TournamentManager
@@ -9,6 +10,14 @@ def main_menu():
     tournament = TournamentManager()
     player = PlayerManager()
     report = ReportManager()
+
+    try:
+        os.path.exists("data")
+    except FileNotFoundError:
+        os.mkdir("data")
+        os.mkdir("data/player")
+        os.mkdir("data/report")
+        os.mkdir("data/tournaments")
 
     menu = ""
     while menu != "Q":
@@ -35,4 +44,5 @@ def main_menu():
             print(Fore.RED + "Votre réponse est invalide." + Fore.RESET)
 
 
-main_menu()
+if __name__ == "__main__":
+    main_menu()

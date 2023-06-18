@@ -7,7 +7,12 @@ class Match:
     """Define a Match as an object"""
 
     def __init__(
-        self, player, opponent, player_score=0, opponent_score=0, match_result=None
+        self,
+        player,
+        opponent,
+        player_score=0,
+        opponent_score=0,
+        match_result=None,
     ):
         self.player = player
         self.opponent = opponent

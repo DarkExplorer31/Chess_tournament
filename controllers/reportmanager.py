@@ -9,7 +9,7 @@ from models.match import Match
 
 from views.reportview import ReportView
 
-REPORT_FILE = "data/report/report.csv"
+REPORT_FILE = "data/report/report"
 
 
 class ReportManager:
@@ -23,12 +23,22 @@ class ReportManager:
             return None
         return all_tournaments
 
-    def report_control(self):
-        path_control = os.path.exists(REPORT_FILE)
-        if path_control:
+    def report_control(self, file):
+        open_verif = None
+        try:
+            with open(file, "w"):
+                pass
+        except PermissionError:
+            open_verif = False
+        else:
+            open_verif = True
+        path_control = os.path.exists(file)
+        if path_control and open_verif:
             self.reportview.display_create_report()
+            return True
         else:
             self.reportview.display_create_error()
+            return False
 
     def get_chosen_tournament(self):
         all_tournaments = self.all_tournaments_name()
@@ -71,6 +81,20 @@ class ReportManager:
             matches.append(match_restored)
         return matches
 
+    def open_selected_report(self, file_to_open):
+        to_open = self.reportview.ask_to_open()
+        if to_open:
+            control_file = os.path.exists(file_to_open)
+            if control_file:
+                with open(file_to_open, "r", newline="") as file:
+                    reader = csv.reader(file)
+                    for line_to_format in reader:
+                        self.reportview.display_content(line_to_format)
+            else:
+                self.reportview.open_error()
+        else:
+            return None
+
     def all_tournaments_report(self):
         """Export a list of all tournaments"""
         all_tournaments = self.all_tournaments_name()
@@ -99,11 +123,14 @@ class ReportManager:
                     current.comment,
                 ]
             )
-        with open(REPORT_FILE, "w") as file:
-            writer = csv.writer(file, delimiter=";")
-            writer.writerow(title)
-            writer.writerows(exctraction)
-        self.report_control()
+        file_name = REPORT_FILE + "_all_tournaments.csv"
+        verification = self.report_control(file_name)
+        if verification:
+            with open(file_name, "w", newline="") as file:
+                writer = csv.writer(file, delimiter=";")
+                writer.writerow(title)
+                writer.writerows(exctraction)
+            self.open_selected_report(file_name)
 
     def name_and_time_tournament(self):
         """Export a list with names and dates from a chosen tournament."""
@@ -125,26 +152,62 @@ class ReportManager:
             tournament.ending_date,
         ]
         data_from_list = zip(tournament.players, tournament.ranking)
-        with open(REPORT_FILE, "w") as file:
-            writer = csv.writer(file, delimiter=";")
-            writer.writerow(data)
-            i = 0
-            for player, rank in data_from_list:
-                if i == 0:
-                    writer.writerow(from_tournament + [player] + [rank])
-                else:
-                    writer.writerow([""] * 4 + [player] + [rank])
-                i += 1
-        self.report_control()
+        file_name = REPORT_FILE + "_" + tournament.name + ".csv"
+        file_name = file_name.replace(" ", "")
+        verification = self.report_control(file_name)
+        if verification:
+            with open(file_name, "w", newline="") as file:
+                writer = csv.writer(file, delimiter=";")
+                writer.writerow(data)
+                i = 0
+                for player, rank in data_from_list:
+                    if i == 0:
+                        writer.writerow(from_tournament + [player] + [rank])
+                    else:
+                        writer.writerow([""] * 4 + [player] + [rank])
+                    i += 1
+            self.open_selected_report(file_name)
 
     def all_matches_and_rounds(self):
         """Export a list of all matches from all rounds
-        from a selected tournament"""  # A Finir
+        from a selected tournament"""
         tournament = self.get_chosen_tournament()
         if not tournament:
             return None
         tournament.round_list = self.get_round_list(tournament.name)
-        title = ["Tournament_name", ""]
+        title = [
+            "round_number",
+            "player",
+            "opponent",
+            "player_score",
+            "opponent_score",
+        ]
+        data = []
+        for round in tournament.round_list:
+            for match in round.match_list:
+                player = match.player
+                opponent = match.opponent
+                player_score = match.player_score
+                opponent_score = match.opponent_score
+                if not match.match_result:
+                    player_score = "Not Played"
+                    opponent_score = "Not Played"
+                match_list = [
+                    round.round_nb,
+                    player.identifiant,
+                    opponent.identifiant,
+                    player_score,
+                    opponent_score,
+                ]
+                data.append(match_list)
+        file_name = REPORT_FILE + "_" + tournament.name + "_all_round.csv"
+        verification = self.report_control(file_name)
+        if verification:
+            with open(file_name, "w", newline="") as file:
+                writer = csv.writer(file, delimiter=";")
+                writer.writerow(title)
+                writer.writerows(data)
+            self.open_selected_report(file_name)
 
     def all_players_report(self):
         """Export a list of all players saved"""
@@ -159,11 +222,14 @@ class ReportManager:
                 player.identifiant,
             ]
             data.append(player_extract)
-        with open(REPORT_FILE, "w") as file:
-            writer = csv.writer(file, delimiter=";")
-            writer.writerow(title)
-            writer.writerows(data)
-        self.report_control()
+        file_name = REPORT_FILE + "_all_players_saved.csv"
+        verification = self.report_control(file_name)
+        if verification:
+            with open(file_name, "w", newline="") as file:
+                writer = csv.writer(file, delimiter=";")
+                writer.writerow(title)
+                writer.writerows(data)
+            self.open_selected_report(file_name)
 
     def all_players_tournament_report(self):
         """Export a list of players from a selected tournament
@@ -180,17 +246,21 @@ class ReportManager:
             player_restored = Player.get_player_by_ident(player_ident)
             all_tournament_player.append(player_restored.name)
         sorted_player = sorted(all_tournament_player, reverse=True)
-        with open(REPORT_FILE, "w") as file:
-            writer = csv.writer(file, delimiter=";")
-            writer.writerow(title)
-            i = 0
-            for player_name in sorted_player:
-                if i == 0:
-                    writer.writerow([tournament.name] + [player_name])
-                else:
-                    writer.writerow([""] + [player_name])
-                i += 1
-        self.report_control()
+        file_name = REPORT_FILE + "_" + tournament.name + "_all_players.csv"
+        file_name = file_name.replace(" ", "")
+        verification = self.report_control(file_name)
+        if verification:
+            with open(file_name, "w", newline="") as file:
+                writer = csv.writer(file, delimiter=";")
+                writer.writerow(title)
+                i = 0
+                for player_name in sorted_player:
+                    if i == 0:
+                        writer.writerow([tournament.name] + [player_name])
+                    else:
+                        writer.writerow([""] + [player_name])
+                    i += 1
+            self.open_selected_report(file_name)
 
     def execute(self):
         end_execution = False
