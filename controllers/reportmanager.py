@@ -158,14 +158,9 @@ class ReportManager:
         if verification:
             with open(file_name, "w", newline="") as file:
                 writer = csv.writer(file, delimiter=";")
-                writer.writerow(data)
-                i = 0
+                writer.writerows(data)
                 for player, rank in data_from_list:
-                    if i == 0:
-                        writer.writerow(from_tournament + [player] + [rank])
-                    else:
-                        writer.writerow([""] * 4 + [player] + [rank])
-                    i += 1
+                    writer.writerow(from_tournament + [player] + [rank])
             self.open_selected_report(file_name)
 
     def all_matches_and_rounds(self):
@@ -253,13 +248,8 @@ class ReportManager:
             with open(file_name, "w", newline="") as file:
                 writer = csv.writer(file, delimiter=";")
                 writer.writerow(title)
-                i = 0
                 for player_name in sorted_player:
-                    if i == 0:
-                        writer.writerow([tournament.name] + [player_name])
-                    else:
-                        writer.writerow([""] + [player_name])
-                    i += 1
+                    writer.writerow([tournament.name] + [player_name])
             self.open_selected_report(file_name)
 
     def execute(self):

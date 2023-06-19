@@ -30,7 +30,7 @@ def main_menu():
             + "#3: La Gestion des rapports\n"
             + Fore.RESET
             + "ou tapez 'q' pour quitter.\n"
-            "Quel menu souhaitez-vous sélectionner ?(1/2/3)> "
+            "Quel menu souhaitez-vous sélectionner ?\n(1/2/3/q)> "
         ).upper()
         if menu == "1":
             player.player_management()

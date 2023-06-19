@@ -77,5 +77,4 @@ class ReportView:
 
     def display_content(self, line_to_visualized):
         for element in line_to_visualized:
-            element = element.replace(" ", "Vide")
             print(element.replace(";", ", "))
